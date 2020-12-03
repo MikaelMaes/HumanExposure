@@ -1,0 +1,480 @@
+#-------------------------------------------------------------------------------------
+# R CODE: EXTRACTION OF NATURAL HABITAT EXPOSURE VARIABLES
+#-------------------------------------------------------------------------------------
+
+# Start by putting directory right
+setwd("...file path...")
+getwd()
+
+# Load the following packages in R version 4.0.0 using RStudio
+library(sp)
+library(rgdal)
+library(raster)
+library(rgeos)
+library(Rcpp)
+library(stringi)
+library(stringr)
+library(ggplot2)
+library(ggsn)
+
+#-------------------------------------------------------------------------------------
+
+# Set up your dataframe
+# df is the dataset which contains each child's geolocation - point based data
+df <- read.csv("...file path...", header = TRUE, sep = ",", dec = ".")
+# school is the dataset which contains each school's geolocation - point based data
+school <- read.csv("...file path...", header = TRUE, sep = ",", dec = ".")
+# Study population data including geolocation data are not publicly available for data protection issues. To request access to the data, contact M. B. Toledano at m.toledano@imperial.ac.uk.
+
+#-------------------------------------------------------------------------------------
+
+# Load natural habitat environmental data in as a raster
+# This environmental data is already projected in British National Grid (BNG) in order to align with other geographical projections in this analysis
+layer1_BNG <- raster("...file path...")
+layer2_BNG <- raster("...file path...")
+layer3_BNG <- raster("...file path...")
+
+# Explore your raster layer with a histogram
+hist(layer1_BNG, main="London layer 1", col="purple")
+
+#-------------------------------------------------------------------------------------
+
+# Remove any missing values in observations (NA) before changing it into a spatialpoint dataframe
+df <- na.omit(df)
+school <- na.omit(school)
+
+# Turning the df and school into a spatialpointsdataframe
+coordinates(df) <- ~ Longitude + Latitude
+coordinates(school) <- ~ Longitude + Latitude
+
+#-------------------------------------------------------------------------------------
+
+cs_WGS <- "+init=epsg:4326 +proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0"
+cs_BNG <- "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +datum=OSGB36 +units=m +no_defs +ellps=airy +towgs84=446.448,-125.157,542.060,0.1502,0.2470,0.8421,-20.4894"
+cs_UTM <- "+proj=utm +zone=30U ellps=WGS84"
+
+# Put df and school projections into cs_WGS projection to easily work in R
+projection(df) <- cs_WGS
+projection(school) <- cs_WGS
+
+# Reproject df and school to the same coordinate system as raster layers
+df = spTransform(df,cs_BNG)
+school = spTransform(school,cs_BNG)
+
+#-------------------------------------------------------------------------------------
+
+# Development of natural habitat exposure variables
+# Proportion of natural space in a buffer area of 50 m, 100 m, 250 m and 500 m around each child's home and school area
+
+# Extract with buffer for home (res = residential area) and school (sch = school area)
+res_NS_50 <- extract(layer1_BNG, df, buffer = 50)
+res_NS_100 <- extract(layer1_BNG, df, buffer = 100)
+res_NS_250 <- extract(layer1_BNG, df, buffer = 250)
+res_NS_500 <- extract(layer1_BNG, df, buffer = 500)
+sch_NS_50 <- extract(layer1_BNG, school, buffer = 50)
+sch_NS_100 <- extract(layer1_BNG, school, buffer = 100)
+sch_NS_250 <- extract(layer1_BNG, school, buffer = 250)
+sch_NS_500 <- extract(layer1_BNG, school, buffer = 500)
+
+# Quick calculation of area of circle for 50, 100 and 250 m = pi(radius)^2
+# Pixel resolution in each raster layer of 2m * 2m = 4m^2
+total50 <- (pi*(50)^2)/4
+total100 <- (pi*(100)^2)/4
+total250 <- (pi*(250)^2)/4
+total500 <- (pi*(500)^2)/4
+
+# Calculate the proportion of natural space in our raster layer (layer1)
+df$res_nat_spa_50 <- sapply(res_NS_50, function(x) ((length(which(x==1)))/total50))
+df$res_nat_spa_100 <- sapply(res_NS_100, function(x) ((length(which(x==1)))/total100))
+df$res_nat_spa_250 <- sapply(res_NS_250, function(x) ((length(which(x==1)))/total250))
+df$res_nat_spa_500 <- sapply(res_NS_500, function(x) ((length(which(x==1)))/total500))
+school$sch_nat_spa_50 <- sapply(sch_NS_50, function(x) ((length(which(x==1)))/total50))
+school$sch_nat_spa_100 <- sapply(sch_NS_100, function(x) ((length(which(x==1)))/total100))
+school$sch_nat_spa_250 <- sapply(sch_NS_250, function(x) ((length(which(x==1)))/total250))
+school$sch_nat_spa_500 <- sapply(sch_NS_500, function(x) ((length(which(x==1)))/total500))
+
+# Extract data in a csv file
+write.csv(df, file = "...file path...")
+write.csv(school, file = "...file path...")
+
+#-----------------------------------------------------------------------------------------
+
+# Development of natural habitat exposure variables
+# Proportion of green and blue space in a buffer area of 50 m, 100 m, 250 m and 500 m around each child's home and school area
+
+# Extract with buffer for home (res = residential area) and school (sch = school area)
+res_GBS_50 <- extract(layer2_BNG, df, buffer = 50)
+res_GBS_100 <- extract(layer2_BNG, df, buffer = 100)
+res_GBS_250 <- extract(layer2_BNG, df, buffer = 250)
+res_GBS_500 <- extract(layer2_BNG, df, buffer = 500)
+sch_GBS_50 <- extract(layer2_BNG, school, buffer = 50)
+sch_GBS_100 <- extract(layer2_BNG, school, buffer = 100)
+sch_GBS_250 <- extract(layer2_BNG, school, buffer = 250)
+sch_GBS_500 <- extract(layer2_BNG, school, buffer = 500)
+
+# Calculate the proportion of green and blue space in our raster layer (layer2)
+df$res_gre_spa_50 <- sapply(res_GBS_50, function(x) ((length(which(x==1)))/total50))
+df$res_gre_spa_100 <- sapply(res_GBS_100, function(x) ((length(which(x==1)))/total100))
+df$res_gre_spa_250 <- sapply(res_GBS_250, function(x) ((length(which(x==1)))/total250))
+df$res_gre_spa_500 <- sapply(res_GBS_500, function(x) ((length(which(x==1)))/total500))
+school$sch_gre_spa_50 <- sapply(sch_GBS_50, function(x) ((length(which(x==1)))/total50))
+school$sch_gre_spa_100 <- sapply(sch_GBS_100, function(x) ((length(which(x==1)))/total100))
+school$sch_gre_spa_250 <- sapply(sch_GBS_250, function(x) ((length(which(x==1)))/total250))
+school$sch_gre_spa_500 <- sapply(sch_GBS_500, function(x) ((length(which(x==1)))/total500))
+
+df$res_blu_spa_50 <- sapply(res_GBS_50, function(x) ((length(which(x==2)))/total50))
+df$res_blu_spa_100 <- sapply(res_GBS_100, function(x) ((length(which(x==2)))/total100))
+df$res_blu_spa_250 <- sapply(res_GBS_250, function(x) ((length(which(x==2)))/total250))
+df$res_blu_spa_500 <- sapply(res_GBS_500, function(x) ((length(which(x==2)))/total500))
+school$sch_blu_spa_50 <- sapply(sch_GBS_50, function(x) ((length(which(x==2)))/total50))
+school$sch_blu_spa_100 <- sapply(sch_GBS_100, function(x) ((length(which(x==2)))/total100))
+school$sch_blu_spa_250 <- sapply(sch_GBS_250, function(x) ((length(which(x==2)))/total250))
+school$sch_blu_spa_500 <- sapply(sch_GBS_500, function(x) ((length(which(x==2)))/total500))
+
+# Extract data in a csv file
+write.csv(df, file = "...file Path...")
+write.csv(school, file = "...file path...")
+
+#-----------------------------------------------------------------------------------------
+
+# Development of natural habitat exposure variables
+# Proportion of grassland and woodland space in a buffer area of 50 m, 100 m, 250 m and 500 m around each child's home and school area
+
+# Extract with buffer for home (res = residential area) and school (sch = school area)
+res_GStype_50 <- extract(layer3_BNG, df, buffer = 50)
+res_GStype_100 <- extract(layer3_BNG, df, buffer = 100)
+res_GStype_250 <- extract(layer3_BNG, df, buffer = 250)
+res_GStype_500 <- extract(layer3_BNG, df, buffer = 500)
+sch_GStype_50 <- extract(layer3_BNG, school, buffer = 50)
+sch_GStype_100 <- extract(layer3_BNG, school, buffer = 100)
+sch_GStype_250 <- extract(layer3_BNG, school, buffer = 250)
+sch_GStype_500 <- extract(layer3_BNG, school, buffer = 500)
+
+# Calculate the proportion of green and blue space in our raster layer (layer3)
+# Grassland
+df$res_lowv_50 <- sapply(res_GStype_50, function(x) ((length(which(x==1)))/total50))
+df$res_lowv_100 <- sapply(res_GStype_100, function(x) ((length(which(x==1)))/total100))
+df$res_lowv_250 <- sapply(res_GStype_250, function(x) ((length(which(x==1)))/total250))
+df$res_lowv_500 <- sapply(res_GStype_500, function(x) ((length(which(x==1)))/total500))
+school$sch_lowv_50 <- sapply(sch_GStype_50, function(x) ((length(which(x==1)))/total50))
+school$sch_lowv_100 <- sapply(sch_GStype_100, function(x) ((length(which(x==1)))/total100))
+school$sch_lowv_250 <- sapply(sch_GStype_250, function(x) ((length(which(x==1)))/total250))
+school$sch_lowv_500 <- sapply(sch_GStype_500, function(x) ((length(which(x==1)))/total500))
+
+# Woodland
+df$res_highv_50 <- sapply(res_GStype_50, function(x) ((length(which(x==2)))/total50))
+df$res_highv_100 <- sapply(res_GStype_100, function(x) ((length(which(x==2)))/total100))
+df$res_highv_250 <- sapply(res_GStype_250, function(x) ((length(which(x==2)))/total250))
+df$res_highv_500 <- sapply(res_GStype_500, function(x) ((length(which(x==2)))/total500))
+school$sch_highv_50 <- sapply(sch_GStype_50, function(x) ((length(which(x==2)))/total50))
+school$sch_highv_100 <- sapply(sch_GStype_100, function(x) ((length(which(x==2)))/total100))
+school$sch_highv_250 <- sapply(sch_GStype_250, function(x) ((length(which(x==2)))/total250))
+school$sch_highv_500 <- sapply(sch_GStype_500, function(x) ((length(which(x==2)))/total500))
+
+# Presence of NoData - Layer 3 contains a number of areas within the map which have NoData because the LiDAR for the London metropolitan area is not entirely complete. Some of the calculated buffers around each child's home or school area may contain NoData and this must be taken into consideration in further analysis.
+df$res_NA_50 <- sapply(res_GStype_50, function(x) ((length(which(x==9999)))/total50))
+df$res_NA_100 <- sapply(res_GStype_100, function(x) ((length(which(x==9999)))/total100))
+df$res_NA_250 <- sapply(res_GStype_250, function(x) ((length(which(x==9999)))/total250))
+df$res_NA_500 <- sapply(res_GStype_500, function(x) ((length(which(x==9999)))/total500))
+school$sch_NA_50 <- sapply(sch_GStype_50, function(x) ((length(which(x==9999)))/total50))
+school$sch_NA_100 <- sapply(sch_GStype_100, function(x) ((length(which(x==9999)))/total100))
+school$sch_NA_250 <- sapply(sch_GStype_250, function(x) ((length(which(x==9999)))/total250))
+school$sch_NA_500 <- sapply(sch_GStype_500, function(x) ((length(which(x==9999)))/total500))
+
+# Extract data in a csv file
+write.csv(school, file = "...file pat...")
+write.csv(df, file = "...file path...")
+
+#-----------------------------------------------------------------------------------------
+
+# All files created to develop natura habitat exosure variables are first merged into one file based on the merge function
+# For example
+df <- merge(fileX, fileY, by="shared and unique identifier")
+
+# Then we proceed to calculate each child’s proportionate daily exposure rate to each natural habitat characterisation in buffer areas of 50 m, 100 m, 250 m and 500 m around the residential and school area based on formula (1) in the main manuscript
+
+# Calculate natural space exposure (with daytime of 12 hours)
+a_50 = ((4*df$res_nat_spa_50) + (8*df$sch_nat_spa_50))/12
+df$tot_nat_spa_50 = ((5*a_50) + (2*df$res_nat_spa_50))/7
+
+a_100 = ((4*df$res_nat_spa_100) + (8*df$sch_nat_spa_100))/12
+df$tot_nat_spa_100 = ((5*a_100) + (2*df$res_nat_spa_100))/7
+
+a_250 = ((4*df$res_nat_spa_250) + (8*df$sch_nat_spa_250))/12
+df$tot_nat_spa_250 = ((5*a_250) + (2*df$res_nat_spa_250))/7
+
+a_500 = ((4*df$res_nat_spa_500) + (8*df$sch_nat_spa_500))/12
+df$tot_nat_spa_500 = ((5*a_500) + (2*df$res_nat_spa_500))/7
+
+# Calculate green space exposure (with daytime of 12 hours)
+b_50 = ((4*df$res_gre_spa_50) + (8*df$sch_gre_spa_50))/12
+df$tot_gre_spa_50 = ((5*b_50) + (2*df$res_gre_spa_50))/7
+
+b_100 = ((4*df$res_gre_spa_100) + (8*df$sch_gre_spa_100))/12
+df$tot_gre_spa_100 = ((5*b_100) + (2*df$res_gre_spa_100))/7
+
+b_250 = ((4*df$res_gre_spa_250) + (8*df$sch_gre_spa_250))/12
+df$tot_gre_spa_250 = ((5*b_250) + (2*df$res_gre_spa_250))/7
+
+b_500 = ((4*df$res_gre_spa_500) + (8*df$sch_gre_spa_500))/12
+df$tot_gre_spa_500 = ((5*b_500) + (2*df$res_gre_spa_500))/7
+
+# Calculate blue space exposure (with daytime of 12 hours)
+c_50 = ((4*df$res_blu_spa_50) + (8*df$sch_blu_spa_50))/12
+df$tot_blu_spa_50 = ((5*c_50) + (2*df$res_blu_spa_50))/7
+
+c_100 = ((4*df$res_blu_spa_100) + (8*df$sch_blu_spa_100))/12
+df$tot_blu_spa_100 = ((5*c_100) + (2*df$res_blu_spa_100))/7
+
+c_250 = ((4*df$res_blu_spa_250) + (8*df$sch_blu_spa_250))/12
+df$tot_blu_spa_250 = ((5*c_250) + (2*df$res_blu_spa_250))/7
+
+c_500 = ((4*df$res_blu_spa_500) + (8*df$sch_blu_spa_500))/12
+df$tot_blu_spa_500 = ((5*c_500) + (2*df$res_blu_spa_500))/7
+
+# Calculate grassland exposure (with daytime of 12 hours)
+d_50 = ((4*df$res_lowv_50) + (8*df$sch_lowv_50))/12
+df$tot_lowv_50 = ((5*d_50) + (2*df$res_lowv_50))/7
+
+d_100 = ((4*df$res_lowv_100) + (8*df$sch_lowv_100))/12
+df$tot_lowv_100 = ((5*d_100) + (2*df$res_lowv_100))/7
+
+d_250 = ((4*df$res_lowv_250) + (8*df$sch_lowv_250))/12
+df$tot_lowv_250 = ((5*d_250) + (2*df$res_lowv_250))/7
+
+d_500 = ((4*df$res_lowv_500) + (8*df$sch_lowv_500))/12
+df$tot_lowv_500 = ((5*d_500) + (2*df$res_lowv_500))/7
+
+# Calculate woodland exposure (with daytime of 12 hours)
+e_50 = ((4*df$res_highv_50) + (8*df$sch_highv_50))/12
+df$tot_highv_50 = ((5*e_50) + (2*df$res_highv_50))/7
+
+e_100 = ((4*df$res_highv_100) + (8*df$sch_highv_100))/12
+df$tot_highv_100 = ((5*e_100) + (2*df$res_highv_100))/7
+
+e_250 = ((4*df$res_highv_250) + (8*df$sch_highv_250))/12
+df$tot_highv_250 = ((5*e_250) + (2*df$res_highv_250))/7
+
+e_500 = ((4*df$res_highv_500) + (8*df$sch_highv_500))/12
+df$tot_highv_500 = ((5*e_500) + (2*df$res_highv_500))/7
+
+# Calculate presence of NoData within buffer areas (with daytime of 12 hours)
+g_50 = ((4*df$res_NA_50) + (8*df$sch_NA_50))/12
+df$tot_NA_50 = ((5*g_50) + (2*df$res_NA_50))/7
+
+g_100 = ((4*df$res_NA_100) + (8*df$sch_NA_100))/12
+df$tot_NA_100 = ((5*g_100) + (2*df$res_NA_100))/7
+
+g_250 = ((4*df$res_NA_250) + (8*df$sch_NA_250))/12
+df$tot_NA_250 = ((5*g_250) + (2*df$res_NA_250))/7
+
+g_500 = ((4*df$res_NA_500) + (8*df$sch_NA_500))/12
+df$tot_NA_500 = ((5*g_500) + (2*df$res_NA_500))/7
+
+# Calculate natural space exposure (with daytime of 24 hours)
+h_50 = ((16*df$res_nat_spa_50) + (8*df$sch_nat_spa_50))/24
+df$tot_nat_spa_24h_50 = ((5*h_50) + (2*df$res_nat_spa_50))/7
+
+h_100 = ((16*df$res_nat_spa_100) + (8*df$sch_nat_spa_100))/24
+df$tot_nat_spa_24h_100 = ((5*h_100) + (2*df$res_nat_spa_100))/7
+
+h_250 = ((16*df$res_nat_spa_250) + (8*df$sch_nat_spa_250))/24
+df$tot_nat_spa_24h_250 = ((5*h_250) + (2*df$res_nat_spa_250))/7
+
+h_500 = ((16*df$res_nat_spa_500) + (8*df$sch_nat_spa_500))/24
+df$tot_nat_spa_24h_500 = ((5*h_500) + (2*df$res_nat_spa_500))/7
+
+# Calculate green space exposure (with daytime of 24 hours)
+i_50 = ((16*df$res_gre_spa_50) + (8*df$sch_gre_spa_50))/24
+df$tot_gre_spa_24h_50 = ((5*i_50) + (2*df$res_gre_spa_50))/7
+
+i_100 = ((16*df$res_gre_spa_100) + (8*df$sch_gre_spa_100))/24
+df$tot_gre_spa_24h_100 = ((5*i_100) + (2*df$res_gre_spa_100))/7
+
+i_250 = ((16*df$res_gre_spa_250) + (8*df$sch_gre_spa_250))/24
+df$tot_gre_spa_24h_250 = ((5*i_250) + (2*df$res_gre_spa_250))/7
+
+i_500 = ((16*df$res_gre_spa_500) + (8*df$sch_gre_spa_500))/24
+df$tot_gre_spa_24h_500 = ((5*i_500) + (2*df$res_gre_spa_500))/7
+
+# Calculate blue space exposure (with daytime of 24 hours)
+j_50 = ((16*df$res_blu_spa_50) + (8*df$sch_blu_spa_50))/24
+df$tot_blu_spa_24h_50 = ((5*j_50) + (2*df$res_blu_spa_50))/7
+
+j_100 = ((16*df$res_blu_spa_100) + (8*df$sch_blu_spa_100))/24
+df$tot_blu_spa_24h_100 = ((5*j_100) + (2*df$res_blu_spa_100))/7
+
+j_250 = ((16*df$res_blu_spa_250) + (8*df$sch_blu_spa_250))/24
+df$tot_blu_spa_24h_250 = ((5*j_250) + (2*df$res_blu_spa_250))/7
+
+j_500 = ((16*df$res_blu_spa_500) + (8*df$sch_blu_spa_500))/24
+df$tot_blu_spa_24h_500 = ((5*j_500) + (2*df$res_blu_spa_500))/7
+
+# Calculate grassland exposure (with daytime of 24 hours)
+k_50 = ((16*df$res_lowv_50) + (8*df$sch_lowv_50))/24
+df$tot_lowv_24h_50 = ((5*k_50) + (2*df$res_lowv_50))/7
+
+k_100 = ((16*df$res_lowv_100) + (8*df$sch_lowv_100))/24
+df$tot_lowv_24h_100 = ((5*k_100) + (2*df$res_lowv_100))/7
+
+k_250 = ((16*df$res_lowv_250) + (8*df$sch_lowv_250))/24
+df$tot_lowv_24h_250 = ((5*k_250) + (2*df$res_lowv_250))/7
+
+k_500 = ((16*df$res_lowv_500) + (8*df$sch_lowv_500))/24
+df$tot_lowv_24h_500 = ((5*k_500) + (2*df$res_lowv_500))/7
+
+# Calculate woodland exposure (with daytime of 24 hours)
+l_50 = ((16*df$res_highv_50) + (8*df$sch_highv_50))/24
+df$tot_highv_24h_50 = ((5*l_50) + (2*df$res_highv_50))/7
+
+l_100 = ((16*df$res_highv_100) + (8*df$sch_highv_100))/24
+df$tot_highv_24h_100 = ((5*l_100) + (2*df$res_highv_100))/7
+
+l_250 = ((16*df$res_highv_250) + (8*df$sch_highv_250))/24
+df$tot_highv_24h_250 = ((5*l_250) + (2*df$res_highv_250))/7
+
+l_500 = ((16*df$res_highv_500) + (8*df$sch_highv_500))/24
+df$tot_highv_24h_500 = ((5*l_500) + (2*df$res_highv_500))/7
+
+# Calculate presence of NoData within buffer areas (with daytime of 24 hours)
+n_50 = ((16*df$res_NA_50) + (8*df$sch_NA_50))/24
+df$tot_NA_24h_50 = ((5*n_50) + (2*df$res_NA_50))/7
+
+n_100 = ((16*df$res_NA_100) + (8*df$sch_NA_100))/24
+df$tot_NA_24h_100 = ((5*n_100) + (2*df$res_NA_100))/7
+
+n_250 = ((16*df$res_NA_250) + (8*df$sch_NA_250))/24
+df$tot_NA_24h_250 = ((5*n_250) + (2*df$res_NA_250))/7
+
+n_500 = ((16*df$res_NA_500) + (8*df$sch_NA_500))/24
+df$tot_NA_24h_500 = ((5*n_500) + (2*df$res_NA_500))/7
+
+#-----------------------------------------------------------------------------------------
+
+# When NoData is present in buffer areas around each child's home and school area, this means the grassland and woodland exposure may be incorrect. To account for this, if there is NoData present in buffer areas around aeach child's home and school where grassland and woodland exposure was measured, then grassland and woodland exposure become NA
+
+# Residential
+is.na(df$res_lowv_50) <- df$res_NA_50 > 0
+is.na(df$res_highv_50) <- df$res_NA_50 > 0
+
+is.na(df$res_lowv_100) <- df$res_NA_100 > 0
+is.na(df$res_highv_100) <- df$res_NA_100 > 0
+
+is.na(df$res_lowv_250) <- df$res_NA_250 > 0
+is.na(df$res_highv_250) <- df$res_NA_250 > 0
+
+is.na(df$res_lowv_500) <- df$res_NA_500 > 0
+is.na(d0$res_highv_500) <- df$res_NA_500 > 0
+
+# School
+is.na(df$sch_lowv_50) <- df$sch_NA_50 > 0
+is.na(df$sch_highv_50) <- df$sch_NA_50 > 0
+
+is.na(df$sch_lowv_100) <- df$sch_NA_100 > 0
+is.na(df$sch_highv_100) <- df$sch_NA_100 > 0
+
+is.na(df$sch_lowv_250) <- df$sch_NA_250 > 0
+is.na(df$sch_highv_250) <- df$sch_NA_250 > 0
+
+is.na(df$sch_lowv_500) <- df$sch_NA_500 > 0
+is.na(df$sch_highv_500) <- df$sch_NA_500 > 0
+
+# Total (12 hours)
+is.na(df$tot_lowv_50) <- df$tot_NA_50 > 0
+is.na(df$tot_highv_50) <- df$tot_NA_50 > 0
+
+is.na(df$tot_lowv_100) <- df$tot_NA_100 > 0
+is.na(df$tot_highv_100) <- df$tot_NA_100 > 0
+
+is.na(df$tot_lowv_250) <- df$tot_NA_250 > 0
+is.na(df$tot_highv_250) <- df$tot_NA_250 > 0
+
+is.na(df$tot_lowv_500) <- df$tot_NA_500 > 0
+is.na(df$tot_highv_500) <- df$tot_NA_500 > 0
+
+# Total (24 hours)
+is.na(df$tot_lowv_24h_50) <- df$tot_NA_24h_50 > 0
+is.na(df$tot_highv_24h_50) <- df$tot_NA_24h_50 > 0
+
+is.na(df$tot_lowv_24h_100) <- df$tot_NA_24h_100 > 0
+is.na(df$tot_highv_24h_100) <- df$tot_NA_24h_100 > 0
+
+is.na(df$tot_lowv_24h_250) <- df$tot_NA_24h_250 > 0
+is.na(df$tot_highv_24h_250) <- df$tot_NA_24h_250 > 0
+
+is.na(df$tot_lowv_24h_500) <- df$tot_NA_24h_500 > 0
+is.na(df$tot_highv_24h_500) <- df$tot_NA_24h_500 > 0
+
+#-----------------------------------------------------------------------------------------
+
+# Create categorical blue space exposure variable
+
+# Total blue space 50 m
+# Step 1. 0 is temporarily changed to NA
+df$tot_blu_spa_50_reclass <- df$tot_blu_spa_50
+df$tot_blu_spa_50_reclass[df$tot_blu_spa_50_reclass == 0] <- NA
+
+# Step 2: points with a value are seperated into two classes (2 quartiles)
+# 4.336290e-03 is based on the quartile from the lowest cut-off value for all buffers (in this case 250 m)
+quantile(df$tot_blu_spa_50_reclass, prob = seq(0, 1, length = 3), na.rm=T)
+df10$tot_blu_spa_50_reclass[df10$tot_blu_spa_50_reclass > 4.336290e-03] <- 2
+df10$tot_blu_spa_50_reclass[df10$tot_blu_spa_50_reclass <= 4.336290e-03] <- 1
+
+# Step 3: NAs are transformed back to class 0 
+df10$tot_blu_spa_50_reclass[is.na(df10$tot_blu_spa_50_reclass)] <- 0
+
+# Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
+df10$tot_blu_spa_50_reclass <- as.factor(df10$tot_blu_spa_50_reclass)
+
+## Total blue space 100 m
+# Step 1. 0 is temporarily changed to NA
+df10$tot_blu_spa_100_reclass <- df10$tot_blu_spa_100
+df10$tot_blu_spa_100_reclass[df10$tot_blu_spa_100_reclass == 0] <- NA
+
+# Step 2: points with a value are seperated into two classes (2 quartiles)
+quantile(df10$tot_blu_spa_100_reclass, prob = seq(0, 1, length = 3), na.rm=T)
+df10$tot_blu_spa_100_reclass[df10$tot_blu_spa_100_reclass > 4.336290e-03] <- 2
+df10$tot_blu_spa_100_reclass[df10$tot_blu_spa_100_reclass <= 4.336290e-03] <- 1
+
+# Step 3: NAs are transformed back to class 0 
+df10$tot_blu_spa_100_reclass[is.na(df10$tot_blu_spa_100_reclass)] <- 0
+
+# Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
+df10$tot_blu_spa_100_reclass <- as.factor(df10$tot_blu_spa_100_reclass)
+
+## Total blue space 250 m
+# Step 1. 0 is temporarily changed to NA
+df10$tot_blu_spa_250_reclass <- df10$tot_blu_spa_250
+df10$tot_blu_spa_250_reclass[df10$tot_blu_spa_250_reclass == 0] <- NA
+
+# Step 2: points with a value are seperated into two classes (2 quartiles)
+quantile(df10$tot_blu_spa_250_reclass, prob = seq(0, 1, length = 3), na.rm=T)
+df10$tot_blu_spa_250_reclass[df10$tot_blu_spa_250_reclass > 4.336290e-03] <- 2
+df10$tot_blu_spa_250_reclass[df10$tot_blu_spa_250_reclass <= 4.336290e-03] <- 1
+
+# Step 3: NAs are transformed back to class 0 
+df10$tot_blu_spa_250_reclass[is.na(df10$tot_blu_spa_250_reclass)] <- 0
+
+# Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
+df10$tot_blu_spa_250_reclass <- as.factor(df10$tot_blu_spa_250_reclass)
+
+## Total blue space 500 m
+# Step 1. 0 is temporarily changed to NA
+df10$tot_blu_spa_500_reclass <- df10$tot_blu_spa_500
+df10$tot_blu_spa_500_reclass[df10$tot_blu_spa_500_reclass == 0] <- NA
+
+# Step 2: points with a value are seperated into two classes (2 quartiles)
+quantile(df10$tot_blu_spa_500_reclass, prob = seq(0, 1, length = 3), na.rm=T)
+df10$tot_blu_spa_500_reclass[df10$tot_blu_spa_500_reclass > 4.336290e-03] <- 2
+df10$tot_blu_spa_500_reclass[df10$tot_blu_spa_500_reclass <= 4.336290e-03] <- 1
+
+# Step 3: NAs are transformed back to class 0 
+df10$tot_blu_spa_500_reclass[is.na(df10$tot_blu_spa_500_reclass)] <- 0
+
+# Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
+df10$tot_blu_spa_500_reclass <- as.factor(df10$tot_blu_spa_500_reclass)
+
+#-------------------------------------------------------------------------------------
+
+# Write csv file with all generated data attached
+write.csv(df, file = "...file path...")
