@@ -1,0 +1,295 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#------------------------------------------------------------------------------------
+# ANALYSIS 2: Modelling with Strength and Difficulties Questionnaire total difficulties score
+#------------------------------------------------------------------------------------
+
+# Start by putting directory right
+setwd("...file path...")
+getwd()
+
+# Load the following packages
+library(sp); library(raster); library(dismo); library(magrittr); library(ggpubr); library(Matrix); library(INLA); library(geosphere); library(spData); library(spdep); library(ggplot2); library(MatrixModels); library(MBA); library(spam); library(dotCall64); library(grid); library(fields); library(devtools); library(brinla); library(maps); library(rgdal)
+
+# Setting up my dataframe first (actual data remains on USB stick)
+df <- read.csv("...file path...", header = TRUE, sep = ",", dec = ".")
+
+#------------------------------------------------------------------------------------
+# Repeated measure longitudinal models
+
+# Create a combined dataset of baseline and follow-up in one
+df1 <- data.frame(RANDOM_CODE=df$RANDOM_CODE,
+                  longitude=df$Long_F1,
+                  latitude=df$Lat_F1,
+                  MOVING_HOUSE=df$MOVING_HOUSE_F1,
+                  y=df$SDQscore,
+                  tot_nat_spa_50=scale(df$tot_nat_spa_50),
+                  tot_nat_spa_100=scale(df$tot_nat_spa_100),
+                  tot_nat_spa_250=scale(df$tot_nat_spa_250),
+                  tot_nat_spa_500=scale(df$tot_nat_spa_500),
+                  tot_gre_spa_50=scale(df$tot_gre_spa_50),
+                  tot_gre_spa_100=scale(df$tot_gre_spa_100),
+                  tot_gre_spa_250=scale(df$tot_gre_spa_250),
+                  tot_gre_spa_500=scale(df$tot_gre_spa_500),
+                  tot_blu_spa_50_reclass=df$tot_blu_spa_50_reclass,
+                  tot_blu_spa_100_reclass=df$tot_blu_spa_100_reclass,
+                  tot_blu_spa_250_reclass=df$tot_blu_spa_250_reclass,
+                  tot_blu_spa_500_reclass=df$tot_blu_spa_500_reclass,
+                  managed_grassland_50=scale(df$tot_lowv_50),
+                  managed_grassland_100=scale(df$tot_lowv_100),
+                  managed_grassland_250=scale(df$tot_lowv_250),
+                  managed_grassland_500=scale(df$tot_lowv_500),
+                  woodland_50=scale(df$tot_highv_50),
+                  woodland_100=scale(df$tot_highv_100),
+                  woodland_250=scale(df$tot_highv_250),
+                  woodland_500=scale(df$tot_highv_500),
+                  Parental_occupation=df$Parental_occupation,
+                  Area_deprivation=df$Area_deprivation,
+                  Gender=df$Gender_BL_and_F1,
+                  ageD=scale(df$ageD_BL),
+                  Ethnicity=df$Ethnicity_BL_and_F1,
+                  School_type=df$School_type,
+                  school_id=df$school_id_F1,
+                  time="BL")
+
+df2 <- data.frame(RANDOM_CODE=df$RANDOM_CODE,
+                  longitude=df$Long_F1,
+                  latitude=df$Lat_F1,
+                  MOVING_HOUSE=df$MOVING_HOUSE_F1,
+                  y=df$SDQscore_F1,
+                  tot_nat_spa_50=scale(df$tot_nat_spa_50_F1),
+                  tot_nat_spa_100=scale(df$tot_nat_spa_100_F1),
+                  tot_nat_spa_250=scale(df$tot_nat_spa_250_F1),
+                  tot_nat_spa_500=scale(df$tot_nat_spa_500_F1),
+                  tot_gre_spa_50=scale(df$tot_gre_spa_50_F1),
+                  tot_gre_spa_100=scale(df$tot_gre_spa_100_F1),
+                  tot_gre_spa_250=scale(df$tot_gre_spa_250_F1),
+                  tot_gre_spa_500=scale(df$tot_gre_spa_500_F1),
+                  tot_blu_spa_50_reclass=df$tot_blu_spa_50_reclass_F1,
+                  tot_blu_spa_100_reclass=df$tot_blu_spa_100_reclass_F1,
+                  tot_blu_spa_250_reclass=df$tot_blu_spa_250_reclass_F1,
+                  tot_blu_spa_500_reclass=df$tot_blu_spa_500_reclass_F1,
+                  managed_grassland_50=scale(df$tot_lowv_50_F1),
+                  managed_grassland_100=scale(df$tot_lowv_100_F1),
+                  managed_grassland_250=scale(df$tot_lowv_250_F1),
+                  managed_grassland_500=scale(df$tot_lowv_500_F1),
+                  woodland_50=scale(df$tot_highv_50_F1),
+                  woodland_100=scale(df$tot_highv_100_F1),
+                  woodland_250=scale(df$tot_highv_250_F1),
+                  woodland_500=scale(df$tot_highv_500_F1),
+                  Parental_occupation=df$Parental_occupation_F1,
+                  Area_deprivation=df$Area_deprivation_F1,
+                  Gender=df$Gender_BL_and_F1,
+                  ageD=scale(df$ageD_F1),
+                  Ethnicity=df$Ethnicity_BL_and_F1,
+                  School_type=df$School_type,
+                  school_id=df$school_id_F1,
+                  time="F1")
+
+df3 <- rbind(df1, df2)
+
+# Recognise categorical variables as factors in model
+df3$tot_blu_spa_50_reclass <- as.factor(df3$tot_blu_spa_50_reclass)
+df3$tot_blu_spa_100_reclass <- as.factor(df3$tot_blu_spa_100_reclass)
+df3$tot_blu_spa_250_reclass <- as.factor(df3$tot_blu_spa_250_reclass)
+df3$tot_blu_spa_500_reclass <- as.factor(df3$tot_blu_spa_500_reclass)
+df3$School_type <- as.factor(df3$School_type)
+df3$school_id <- as.factor(df3$school_id)
+df3$Ethnicity <- as.factor(df3$Ethnicity)
+df3$Gender <- as.factor(df3$Gender)
+df3$Parental_occupation <- as.factor(df3$Parental_occupation)
+df3$Area_deprivation <- as.factor(df3$Area_deprivation)
+#df3$time <- as.factor(df3$time)
+
+# Create variables for nested design
+df3$schoolidRANDOMCODE <- factor(paste0(df3$school_id, df$RANDOM_CODE))
+df3$RANDOMCODEtime <- factor(paste0(df3$RANDOM_CODE, df3$time))
+df3$schoolidRANDOMCODEtime <- factor(paste0(df3$school_id ,df3$RANDOM_CODE, df3$time))
+
+# Model formulas
+formula_unadj <- y ~ 1 + tot_nat_spa_50 + Gender + ageD + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_adj1 <- y ~ 1 + tot_nat_spa_50 + Gender + ageD + Ethnicity + School_type + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_adj2 <- y ~ 1 + tot_nat_spa_50 + Parental_occupation + Area_deprivation + Gender + ageD + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_adj3 <- y ~ 1 + tot_nat_spa_50 + Parental_occupation + Area_deprivation + Gender + ageD + Ethnicity + School_type + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+# Poisson Model
+MI <- inla("choose formula", family = "poisson", data=df3,
+              control.family=list(variant=0),
+              control.predictor=list(compute=TRUE),
+              control.compute = list(config=TRUE, dic=TRUE, cpo=TRUE, waic=TRUE))
+
+summary(MI)
+
+sum(log(MI$cpo$cpo), na.rm = T)
+
+# Improved estimates for the hyperparameters
+# Estimates look not too high. Therefore, default prior may be fine
+result <- inla.hyperpar(MI)
+summary(result)
+
+# Plot posteriors of SDs of hyperparameters
+bri.hyperpar.plot(result)
+
+#------------------------------------------------------------------------------------
+# LPML calculation
+
+LPML_MI <- sum(log(MI$cpo$cpo), na.rm = T)
+c(LPML_MI)
+
+#------------------------------------------------------------------------------------
+# k-fold cross-validation
+
+# Create new dataframe for k-fold cross-validation
+dfkfold = df3
+
+# Create nfolds and result list
+nfolds = 10
+dfkfold$k = kfold(dfkfold, nfolds)
+result = vector("list", length=nfolds)
+
+# Run models with k-fold 
+for(i in 1:nfolds){
+  dfkfold$ys = dfkfold$y
+  dfkfold$ys[ dfkfold$k == i ] = NA
+# Select the formula you would like to cross-validate
+#formula <- formula("y ~ 1 + tot_nat_spa_50 + Gender + ageD + f(school_id, model = 'iid') + f(schoolidRANDOMCODE, model = 'iid') + f(schoolidRANDOMCODEtime, model = 'iid')")
+#formula <- formula("y ~ 1 + tot_nat_spa_50 + Gender + ageD + Ethnicity + School_type + f(RANDOM_CODE, model = 'iid') + f(RANDOMCODEtime, model = 'iid')") #+ f(RANDOMCODEtime, model = 'iid')")
+#formula <- formula("y ~ 1 + tot_nat_spa_50 + Parental_occupation + Area_deprivation + Gender + ageD + f(RANDOM_CODE, model = 'iid') + f(RANDOMCODEtime, model = 'iid')") #+ f(RANDOMCODEtime, model = 'iid')
+#formula <- formula("y ~ 1 + tot_nat_spa_50 + Parental_occupation + Area_deprivation + Gender + ageD + Ethnicity + School_type + f(school_id, model = 'iid') + f(schoolidRANDOMCODE, model = 'iid') + f(schoolidRANDOMCODEtime, model = 'iid')")
+
+MI <- inla(formula, family="poisson", data=dfkfold,
+             #control.family=list(variant=0),
+             control.predictor=list(compute=TRUE),
+             control.compute = list(config=TRUE, dic=TRUE, cpo=TRUE, waic=TRUE))
+  result[[i]] = MI
+}
+
+# Create out-of-sample variable to add in fitted values
+dfkfold$oos = NA
+
+# Add fitted values for model j in oos
+for(j in 1:nfolds){
+  fv <- result[[j]]$summary.fitted.values[, 1]
+  dfkfold$oos[ dfkfold$k == j ] = fv[ dfkfold$k == j ]
+  }
+
+## Residuals plot
+plot(dfkfold$child_id,dfkfold$ys-dfkfold$oos)
+
+# Plot observed value vs out-of-sample linear predictor
+plot(dfkfold$ys,dfkfold$oos)
+
+## Psuedo R-squared
+cor(dfkfold$ys,dfkfold$oos, use="complete.obs")
+
+#------------------------------------------------------------------------------------
+# Let's study the residuals of first models
+
+# Plot residuals of the predicted values in the INLA model
+df4 <- data.frame(y=df3$y,RANDOM_CODE=df3$RANDOM_CODE, longitude=df3$longitude, latitude=df3$latitude)
+df4$fitted_MI <- MI$summary.fitted.values[,1]
+df4$residuals_MI <- (df4$y-df4$fitted_MI)
+df4 <- na.omit(df4)
+
+# Plotting residuals vs. child_id
+A <- ggplot(df4, aes(x = RANDOM_CODE, y = residuals_MI)) +
+  geom_point(size = 0.5, shape = 1)
+
+fig_res_vs_id <- ggarrange(A,
+                           labels = c("A"),
+                           ncol = 1, nrow = 1)
+fig_res_vs_id
+
+#------------------------------------------------------------------------------------
+# ---- Moran's I test for spatial autocorrelation ----
+
+# run Moran's I on full dataset or subsets thereof and return results
+#' @param coords matrix of spatial coordinates (lon-lat)
+#' @param variable vector of response variable to test for spatial autocorrelation in (e.g. residuals)
+#' @param method either "moran.test" or "moran.mc" for two-sided under randomisation or one-sided using monte carlo sims
+#' @param subset numeric; number of points to randomly select if running MI on a subset of full data (mainly for function testing)
+#' @alternative specify alternative hypothesis if method == "moran.mc", default greater
+
+# imaginary data frame
+moran.data <- data.frame(Long=df5$longitude, Lat=df5$latitude, resid=df5$residuals_MI)
+
+# Random sample of 500
+moran.data <- moran.data[sample(nrow(moran.data), 3000), ]
+
+moran.data <- na.omit(moran.data)
+coords1=cbind(moran.data$Long, moran.data$Lat)
+variable=moran.data$resid
+
+# calculate inverse distances matrix for coordinates
+dists.mat = distm(as.matrix(coords1), fun=distHaversine)
+dists.inv = 1/dists.mat
+dists.inv[ dists.inv == "Inf"] = 0 # sets 0 for instances where coordinates of two sites are identical
+diag(dists.inv) = 0
+
+# calculate weights matrix for moran's i test
+lw = mat2listw(dists.inv)
+lww = nb2listw(lw$neighbours, glist=lw$weights, style="W") # row standardised (sums over all links to n)
+
+# Run test
+moran.test(variable, lww, alternative="two.sided")
+# P-value is not statistically significant -> You cannot reject the null hypothesis
+# The spatial distribution of feature values is the result of random spatial processes
+# The p-value is statistically significant -> The dataset is more spatially clustered than would be expected if spatial processes were random.
+
+#---------------------------------------------------------------------------------------------------
+# Run models with exposure assessment of green space and blue space
+
+# Model formulas
+formula_MII_unadj <- y ~ 1 + tot_gre_spa_50 + tot_blu_spa_50_reclass + Gender + ageD + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_MII_adj1 <- y ~ 1 + tot_gre_spa_50 + tot_blu_spa_50_reclass + Gender + ageD + Ethnicity + School_type + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_MII_adj2 <- y ~ 1 + tot_gre_spa_50 + tot_blu_spa_50_reclass + Parental_occupation + Area_deprivation + Gender + ageD + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_MII_adj3 <- y ~ 1 + tot_gre_spa_50 + tot_blu_spa_50_reclass + Parental_occupation + Area_deprivation + Gender + ageD + Ethnicity + School_type + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+# Poisson Model
+MII <- inla("choose formula", family = "poisson", data=df3,
+            control.family=list(variant=0),
+            control.predictor=list(compute=TRUE),
+            control.compute = list(config=TRUE, dic=TRUE, cpo=TRUE, waic=TRUE))
+
+summary(MII)
+
+#---------------------------------------------------------------------------------------------------
+# Run models with exposure assessment of grassland and woodland
+
+# Model formulas
+formula_MIII_unadj <- y ~ 1 + managed_grassland_500 + woodland_500 + Gender + ageD + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_MIII_adj1 <- y ~ 1 + managed_grassland_500 + woodland_500 + Gender + ageD + Ethnicity + School_type + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_MIII_adj2 <- y ~ 1 + managed_grassland_500 + woodland_500 + Parental_occupation + Area_deprivation + Gender + ageD + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+formula_MIII_adj3 <- y ~ 1 + managed_grassland_500 + woodland_500 + Parental_occupation + Area_deprivation + Gender + ageD + Ethnicity + School_type + f(RANDOM_CODE, model = "iid") + f(RANDOMCODEtime, model = "iid")
+
+# Poisson Model
+MIII <- inla("choose formula", family = "poisson", data=df3,
+                  control.family=list(variant=0),
+                  control.predictor=list(compute=TRUE),
+                  control.compute = list(config=TRUE, dic=TRUE, cpo=TRUE, waic=TRUE))
+
+summary(MIII.unadj.poisson)
