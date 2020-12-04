@@ -1,21 +1,22 @@
-### PYTHON CODE FOR MERGING TIFF FILES INTO ONE FILE
-# To see which packages are installed in your current conda environment and their version numbers
+#-------------------------------------------------------------------------------------
+# PYTHON CODE: MERGE LIDAR TIFF FILES INTO ONE FILE
+#-------------------------------------------------------------------------------------
+
+# The study area within the London metropolitan area is large. The Light Detection and Ranging (LiDAR) data from the Environment Agency are available at data.gov.uk (accessed July 2nd 2018, licensed under the Open Government Licence 3.0). This data are available at a pixel resolution of 1 m or 2 m. For our analysis, both the Digital Surface Model and Digital Terrain Model were used at 2 m spatial resolution. This included merging several 1000s of .tiff files into one using the Python code below.
+
+# See which packages are installed in your current conda environment and their version numbers
 conda list
 
-# To see which Python installation is currently set as the default
+# See which Python installation is currently set as the default
 which python
 
-# To see if the conda installation of Python is in your PATH variable
+# See if the conda installation of Python is in your PATH variable
 echo $PATH
 
-# Create condo environment
-#conda create --name myenv
-# Say ‘yes’ to imitate it
-#y
-# Create condo environment with my python version
+# Create condo environment with Python version
 conda create -n myenv python=2.7.14 
 
-# Get inför on your condo environment
+# Get info on your condo environment
 conda info --envs
 
 # Activate your conda environment
@@ -27,8 +28,8 @@ conda install gdal
 # Say ‘yes’ to installation
 y
 
-# Execute actual merge of tiff files
-gdal_merge.py -o /Users/user1/Documents/output.tif /Users/user1/Documents/test/*.tif
+# Execute merge of tiff files
+gdal_merge.py -o ...file path.../output_location.tif ...file path.../folder_with_tiff_files/*.tif
 
-# Remove condo environment after having done the merge
+# Remove condo environment after merge
 conda remove --name myenv --all
