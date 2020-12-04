@@ -1,4 +1,4 @@
-# HumanExposure
+# Benefits of natural habitat particularly woodland on childen's cognition and mental health
 
 This 'Human Exposure' repository is created to provide transparent and publicly available data and code with regards to the manuscript called 'Benefits of natural habitat particularly woodland on children's cognition and mental health' published at ... .
 
