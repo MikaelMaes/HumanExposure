@@ -1,6 +1,6 @@
 # Benefits of natural habitat particularly woodland on childen's cognition and mental health
 
-This 'Human Exposure' repository is created to provide transparent and publicly available data and code with regards to the manuscript called 'Benefits of natural habitat particularly woodland on children's cognition and mental health' published at ... .
+This repository is created to provide transparent and publicly available data and code with regards to the manuscript called 'Benefits of natural habitat particularly woodland on children's cognition and mental health'. More details will be available upon publication of the manuscript.
 
 This repository provides the three-tier natural habitat characterisation that is at the basis for developing an exposure assessment of natural habitat around each participant's home and school in the London metropolitan area. This includes:
 
@@ -12,8 +12,14 @@ The natural habitat characterisation is based on publicly available data sources
 
 The repository also provides code for processing raw LiDAR data, creating environmental exposure variables and modelling our data. We used the available code in Python 3.7.3. and R 4.0.0 via RStudio using the packages brinla, ggplot2, ggpubr, R-INLA, MBA, raster, rgdal, sp and spdep60. The source code to compute NDVI from satellite data using Google Earth Engine is available at earthengine.google.com. 
 
-```
-item1
-item2
-```
 ## Requirements
+
+The data and custom code provided in this repository has been used within the following software:
+
+* Python 3.7.3.
+* ArcGIS 10.7
+* R 4.0.0
+** Test
+
+
+We did all data processing and statistics in , ArcGIS 10.7 and R 4.0.0 via RStudio using the packages brinla, ggplot2, ggpubr, R-INLA, MBA, raster, rgdal, sp and spdep60.
