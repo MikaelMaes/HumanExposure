@@ -27,7 +27,7 @@ school <- read.csv("...file path...", header = TRUE, sep = ",", dec = ".")
 # Study population data including geolocation data are not publicly available for data protection issues. To request access to the data, contact M. B. Toledano at m.toledano@imperial.ac.uk.
 
 #-------------------------------------------------------------------------------------
-
+ 
 # Load natural habitat environmental data in as a raster
 # This environmental data is already projected in British National Grid (BNG) in order to align with other geographical projections in this analysis
 layer1_BNG <- raster("...file path...")
