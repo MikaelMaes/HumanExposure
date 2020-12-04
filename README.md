@@ -10,7 +10,7 @@ This repository provides the three-tier natural habitat characterisation that is
 
 The natural habitat characterisation is based on publicly available data sources. NDVI maps were developed based on Sentinel-2 satellite data and are available using Google Earth Engine at earthengine.google.com. Buildings, surface water and tidal water data from the Ordnance Survey Open Map are available at ordnancesurvey.co.uk. LiDAR data from the Environment Agency are available at data.gov.uk. The natural habitat exposure data are not publicly available for data protection issues. To request access to the data, contact M. B. Toledano at m.toledano@imperial.ac.uk.
 
-The repository also provides code for processing raw LiDAR data, creating environmental exposure variables and modelling our data. We used the available code in Python 3.7.3. and R 4.0.0 via RStudio using the packages brinla, ggplot2, ggpubr, R-INLA, MBA, raster, rgdal, sp and spdep60. The source code to compute NDVI from satellite data using Google Earth Engine is available at earthengine.google.com. 
+The repository also provides custom code for processing raw LiDAR data, creating environmental exposure variables and modelling our data. 
 
 ## Requirements
 
@@ -19,3 +19,5 @@ The data and custom code provided in this repository has been used within the fo
 * Python 3.7.3.
 * ArcGIS 10.7
 * R 4.0.0 (via RStudio using the packages brinla, ggplot2, ggpubr, R-INLA, MBA, raster, rgdal, sp and spdep60)
+
+The source code to compute NDVI from satellite data using Google Earth Engine is available at earthengine.google.com.
