@@ -20,15 +20,15 @@ Pixels in this layer have two levels:
 ### Layer 2
 
 Pixels in this layer have three levels:
-* 1. Green space
-* 2. Blue space
-* 3. Grey space
+* 1: Green space
+* 2: Blue space
+* 3: Grey space
 
 ### Layer 3
 
 Pixels in this layer have five levels:
-* 1. Grassland
-* 2. Woodland
-* 3. Other space (both grey and blue space)
-* 7777: Not interpretable
-* 9999: No Data
+* 1: Grassland
+* 2: Woodland
+* 3: Other space (both grey and blue space)
+7777. Not interpretable
+9999. No Data
