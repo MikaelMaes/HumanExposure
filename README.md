@@ -18,8 +18,4 @@ The data and custom code provided in this repository has been used within the fo
 
 * Python 3.7.3.
 * ArcGIS 10.7
-* R 4.0.0
-** Test
-
-
-We did all data processing and statistics in , ArcGIS 10.7 and R 4.0.0 via RStudio using the packages brinla, ggplot2, ggpubr, R-INLA, MBA, raster, rgdal, sp and spdep60.
+* R 4.0.0 (via RStudio using the packages brinla, ggplot2, ggpubr, R-INLA, MBA, raster, rgdal, sp and spdep60)
