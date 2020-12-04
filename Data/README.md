@@ -2,9 +2,9 @@
 
 This section of the repository provides the three-tier natural habitat characterisation that is at the basis for developing an exposure assessment of natural habitat around each participant's home and school in the London metropolitan area. This includes:
 
-Layer 1: natural space
-Layer 2: green and blue space
-Layer 3: grassland and woodland
+* Layer 1: natural space
+* Layer 2: green and blue space
+* Layer 3: grassland and woodland
 
 When importing layers into Geographic Information Systems, 
 All layers are projected in British National Grid / OSGB 1936. Layer 1 and 2 are currently provided here as a .jpeg file. Due to file size, layer 3 is available on request from M. J. A. M. at mikael.maes.16@ucl.ac.uk.
