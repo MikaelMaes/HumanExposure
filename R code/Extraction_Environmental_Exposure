@@ -415,64 +415,67 @@ df$tot_blu_spa_50_reclass <- df$tot_blu_spa_50
 df$tot_blu_spa_50_reclass[df$tot_blu_spa_50_reclass == 0] <- NA
 
 # Step 2: points with a value are seperated into two classes (2 quartiles)
-# 4.336290e-03 is based on the quartile from the lowest cut-off value for all buffers (in this case 250 m)
 quantile(df$tot_blu_spa_50_reclass, prob = seq(0, 1, length = 3), na.rm=T)
-df10$tot_blu_spa_50_reclass[df10$tot_blu_spa_50_reclass > 4.336290e-03] <- 2
-df10$tot_blu_spa_50_reclass[df10$tot_blu_spa_50_reclass <= 4.336290e-03] <- 1
+# The cut-off VALUE produced by the quantile function is then used to generate two levels
+df10$tot_blu_spa_50_reclass[df10$tot_blu_spa_50_reclass > VALUE] <- 2
+df10$tot_blu_spa_50_reclass[df10$tot_blu_spa_50_reclass <= VALUE] <- 1
 
-# Step 3: NAs are transformed back to class 0 
-df10$tot_blu_spa_50_reclass[is.na(df10$tot_blu_spa_50_reclass)] <- 0
-
-# Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
-df10$tot_blu_spa_50_reclass <- as.factor(df10$tot_blu_spa_50_reclass)
-
-## Total blue space 100 m
-# Step 1. 0 is temporarily changed to NA
-df10$tot_blu_spa_100_reclass <- df10$tot_blu_spa_100
-df10$tot_blu_spa_100_reclass[df10$tot_blu_spa_100_reclass == 0] <- NA
-
-# Step 2: points with a value are seperated into two classes (2 quartiles)
-quantile(df10$tot_blu_spa_100_reclass, prob = seq(0, 1, length = 3), na.rm=T)
-df10$tot_blu_spa_100_reclass[df10$tot_blu_spa_100_reclass > 4.336290e-03] <- 2
-df10$tot_blu_spa_100_reclass[df10$tot_blu_spa_100_reclass <= 4.336290e-03] <- 1
-
-# Step 3: NAs are transformed back to class 0 
-df10$tot_blu_spa_100_reclass[is.na(df10$tot_blu_spa_100_reclass)] <- 0
+# Step 3: NAs are transformed back to level 0 
+df$tot_blu_spa_50_reclass[is.na(df$tot_blu_spa_50_reclass)] <- 0
 
 # Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
-df10$tot_blu_spa_100_reclass <- as.factor(df10$tot_blu_spa_100_reclass)
+df$tot_blu_spa_50_reclass <- as.factor(df$tot_blu_spa_50_reclass)
 
-## Total blue space 250 m
+# Total blue space 100 m
 # Step 1. 0 is temporarily changed to NA
-df10$tot_blu_spa_250_reclass <- df10$tot_blu_spa_250
-df10$tot_blu_spa_250_reclass[df10$tot_blu_spa_250_reclass == 0] <- NA
+df$tot_blu_spa_100_reclass <- df$tot_blu_spa_100
+df$tot_blu_spa_100_reclass[df$tot_blu_spa_100_reclass == 0] <- NA
 
-# Step 2: points with a value are seperated into two classes (2 quartiles)
-quantile(df10$tot_blu_spa_250_reclass, prob = seq(0, 1, length = 3), na.rm=T)
-df10$tot_blu_spa_250_reclass[df10$tot_blu_spa_250_reclass > 4.336290e-03] <- 2
-df10$tot_blu_spa_250_reclass[df10$tot_blu_spa_250_reclass <= 4.336290e-03] <- 1
+# Step 2: points with a value are seperated into two levels (2 quartiles)
+quantile(df$tot_blu_spa_100_reclass, prob = seq(0, 1, length = 3), na.rm=T)
+# The cut-off VALUE produced by the quantile function is then used to generate two levels
+df$tot_blu_spa_100_reclass[df$tot_blu_spa_100_reclass > VALUE] <- 2
+df$tot_blu_spa_100_reclass[df$tot_blu_spa_100_reclass <= VALUE] <- 1
 
-# Step 3: NAs are transformed back to class 0 
-df10$tot_blu_spa_250_reclass[is.na(df10$tot_blu_spa_250_reclass)] <- 0
+# Step 3: NAs are transformed back to level 0 
+df$tot_blu_spa_100_reclass[is.na(df$tot_blu_spa_100_reclass)] <- 0
 
 # Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
-df10$tot_blu_spa_250_reclass <- as.factor(df10$tot_blu_spa_250_reclass)
+df$tot_blu_spa_100_reclass <- as.factor(df$tot_blu_spa_100_reclass)
 
-## Total blue space 500 m
+# Total blue space 250 m
 # Step 1. 0 is temporarily changed to NA
-df10$tot_blu_spa_500_reclass <- df10$tot_blu_spa_500
-df10$tot_blu_spa_500_reclass[df10$tot_blu_spa_500_reclass == 0] <- NA
+df$tot_blu_spa_250_reclass <- df$tot_blu_spa_250
+df$tot_blu_spa_250_reclass[df$tot_blu_spa_250_reclass == 0] <- NA
 
-# Step 2: points with a value are seperated into two classes (2 quartiles)
+# Step 2: points with a value are seperated into two levels (2 quartiles)
+quantile(df$tot_blu_spa_250_reclass, prob = seq(0, 1, length = 3), na.rm=T)
+# The cut-off VALUE produced by the quantile function is then used to generate two levels
+df$tot_blu_spa_250_reclass[df$tot_blu_spa_250_reclass > VALUE] <- 2
+df$tot_blu_spa_250_reclass[df$tot_blu_spa_250_reclass <= VALUE] <- 1
+
+# Step 3: NAs are transformed back to level 0 
+df$tot_blu_spa_250_reclass[is.na(df$tot_blu_spa_250_reclass)] <- 0
+
+# Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
+df$tot_blu_spa_250_reclass <- as.factor(df$tot_blu_spa_250_reclass)
+
+# Total blue space 500 m
+# Step 1. 0 is temporarily changed to NA
+df$tot_blu_spa_500_reclass <- df$tot_blu_spa_500
+df$tot_blu_spa_500_reclass[df$tot_blu_spa_500_reclass == 0] <- NA
+
+# Step 2: points with a value are seperated into two levels (2 quartiles)
 quantile(df10$tot_blu_spa_500_reclass, prob = seq(0, 1, length = 3), na.rm=T)
-df10$tot_blu_spa_500_reclass[df10$tot_blu_spa_500_reclass > 4.336290e-03] <- 2
-df10$tot_blu_spa_500_reclass[df10$tot_blu_spa_500_reclass <= 4.336290e-03] <- 1
+# The cut-off VALUE produced by the quantile function is then used to generate two levels
+df$tot_blu_spa_500_reclass[df$tot_blu_spa_500_reclass > VALUE] <- 2
+df$tot_blu_spa_500_reclass[df$tot_blu_spa_500_reclass <= VALUE] <- 1
 
-# Step 3: NAs are transformed back to class 0 
-df10$tot_blu_spa_500_reclass[is.na(df10$tot_blu_spa_500_reclass)] <- 0
+# Step 3: NAs are transformed back to level 0 
+df$tot_blu_spa_500_reclass[is.na(df$tot_blu_spa_500_reclass)] <- 0
 
 # Step 4: tot_blue_spa is transformed to a factor of three levels, i.e. 0, 1 and 2
-df10$tot_blu_spa_500_reclass <- as.factor(df10$tot_blu_spa_500_reclass)
+df$tot_blu_spa_500_reclass <- as.factor(df$tot_blu_spa_500_reclass)
 
 #-------------------------------------------------------------------------------------
 
