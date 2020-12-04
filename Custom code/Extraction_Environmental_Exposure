@@ -3,8 +3,10 @@
 #-------------------------------------------------------------------------------------
 
 # Start by putting directory right
+```
 setwd("...file path...")
 getwd()
+```
 
 # Load the following packages in R version 4.0.0 using RStudio
 library(sp)
