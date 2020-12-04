@@ -14,8 +14,8 @@ All layers are projected in British National Grid / OSGB 1936. Layer 1 and 2 are
 ### Layer 1
 
 Pixels in this layer have two levels:
-* 1. Natural space (both green and blue space)
-* 2. Grey space
+* 1: Natural space (both green and blue space)
+* 2: Grey space
 
 ### Layer 2
 
