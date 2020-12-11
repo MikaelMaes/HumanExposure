@@ -1,6 +1,6 @@
 # Benefits of natural habitat particularly woodland on childen's cognition and mental health
 
-This repository is created to provide transparent and publicly available data and code with regards to the manuscript called 'Benefits of natural habitat particularly woodland on children's cognition and mental health'. More details will be available upon publication of the manuscript.
+This repository is created to provide transparent and publicly available data and code with regards to the manuscript called 'Benefits of natural habitat particularly woodland on children's cognition and mental health'. More details about the manuscript will be available upon publication of the manuscript.
 
 This repository provides the three-tier natural habitat characterisation that is at the basis for developing an exposure assessment of natural habitat around each participant's home and school in the London metropolitan area. This includes:
 
