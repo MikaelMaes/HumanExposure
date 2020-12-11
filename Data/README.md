@@ -30,5 +30,5 @@ Pixels in this layer have five levels:
 * 1: Grassland
 * 2: Woodland
 * 3: Other space (both grey and blue space)
-* 7777: Not interpretable
-* 9999: No Data
+* 4: Not interpretable
+* 5: No Data
