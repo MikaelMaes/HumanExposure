@@ -1,6 +1,6 @@
 ## Technical specifications
 
-This section of the repository provides the three-tier natural habitat characterisation that is at the basis for developing an exposure assessment of natural habitat around each participant's home and school in the London metropolitan area. This includes:
+This section of the repository provides the three-tier natural environment characterisation that is at the basis for developing an exposure assessment of the natural environment around each participant's home and school in the London metropolitan area. This includes:
 
 * Layer 1: natural space
 * Layer 2: green and blue space
