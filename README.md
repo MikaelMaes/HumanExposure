@@ -1,6 +1,6 @@
 # Benefit of woodland and other natural environments for adolescents' cognition and mental health
 
-This repository is created to provide transparent and publicly available data and code with regards to the manuscript called 'Benefit of natural environments particularly woodland on adolescent's cognition and mental health'. More details about the manuscript will be available upon publication.
+This repository is created to provide transparent and publicly available data and code with regards to the manuscript called 'Benefit of woodland and other natural environments for adolescents' cognition and mental health'. More details about the manuscript will be available upon publication.
 
 This repository provides the three-tier natural environment characterisation that is at the basis for developing an exposure assessment of natural environment types around each participant's home and school in the London metropolitan area. This includes:
 
