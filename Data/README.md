@@ -11,6 +11,12 @@ All layers are projected in British National Grid / OSGB 1936. Layer 1 and 2 are
 # R code to project spatial data into OSGB 1936
 "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +datum=OSGB36 +units=m +no_defs +ellps=airy +towgs84=446.448,-125.157,542.060,0.1502,0.2470,0.8421,-20.4894"
 ```
+```
+# The original extent appears lost in Layer 1. This would need to be adjusted before using.
+e <- raster::extent(475000.0000000001746230, 595000.0000000002328306, 145000.0000000011059456, 230000.0000000011059456)
+layer1_BNG <- setExtent(layer1_BNG, e, keepres=FALSE, snap=FALSE)
+```
+
 ### Layer 1
 
 Pixels in this layer have two levels:
